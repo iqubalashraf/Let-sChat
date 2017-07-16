@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Let\'s Chat</string>
+    <string name="brand_color">#0e04f4</string>
+    <string name="text_enter_display_name">Enter display name</string>
+    <string name="text_male">Male</string>
+    <string name="text_female">Female</string>
+</resources>
