@@ -1,10 +1,14 @@
 package app.chat.letschat.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -21,6 +25,8 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
     private final int VIEW_TYPE_INCOMING_MESSAGE = 2;
     private final int VIEW_TYPE_OUTGOING_MESSAGE = 1;
     private final int VIEW_TYPE_OTHER_MESSAGE = 3;
+    private final int VIEW_TYPE_INCOMING_IMAGE_MESSAGE = 5;
+    private final int VIEW_TYPE_OUTGOING_IMAGE_MESSAGE = 4;
     Context context;
     List<Message> messages;
 
@@ -36,6 +42,10 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
                 return new ViewHolderIncomingMessage(LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_incoming_message, parent, false));
             case VIEW_TYPE_OUTGOING_MESSAGE:
                 return new ViewHolderOutgoingMessage(LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_outgoing_message, parent, false));
+            case VIEW_TYPE_INCOMING_IMAGE_MESSAGE:
+                return new ViewHolderIncomingImageMessage(LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_incoming_image_message, parent, false));
+            case VIEW_TYPE_OUTGOING_IMAGE_MESSAGE:
+                return new ViewHolderOutgoingImageMessage(LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_outgoing_image_message, parent, false));
             case VIEW_TYPE_OTHER_MESSAGE:
                 return new ViewHolderOtherMessage(LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_other_message, parent, false));
         }
@@ -52,6 +62,12 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
             ((ViewHolderOutgoingMessage) holder).time.setText(GenralUtils.getFormattedTime(messages.get(position).getCreatedAt()));
         }else if(holder instanceof ViewHolderOtherMessage){
             ((ViewHolderOtherMessage) holder).message.setText(messages.get(position).getText());
+        }else if(holder instanceof ViewHolderIncomingImageMessage){
+            ((ViewHolderIncomingImageMessage) holder).message.setImageBitmap(parseStringToBitmap(messages.get(position).getText()));
+            ((ViewHolderIncomingImageMessage) holder).time.setText(GenralUtils.getFormattedTime(messages.get(position).getCreatedAt()));
+        }else if(holder instanceof ViewHolderOutgoingImageMessage){
+            ((ViewHolderOutgoingImageMessage) holder).message.setImageBitmap(parseStringToBitmap(messages.get(position).getText()));
+            ((ViewHolderOutgoingImageMessage) holder).time.setText(GenralUtils.getFormattedTime(messages.get(position).getCreatedAt()));
         }
 //        switch (messages.get(position).getViewType()){
 //            case VIEW_TYPE_INCOMING_MESSAGE:
@@ -83,7 +99,7 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
         View view;
         TextView time;
         TextView message;
-        public ViewHolderIncomingMessage(View view){
+        ViewHolderIncomingMessage(View view){
             super(view);
             this.view = view;
             time = (TextView)view.findViewById(R.id.time);
@@ -96,7 +112,7 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
         View view;
         TextView message;
         TextView time;
-        public ViewHolderOutgoingMessage(View view){
+        ViewHolderOutgoingMessage(View view){
             super(view);
             this.view = view;
             message = (TextView)view.findViewById(R.id.message);
@@ -105,14 +121,49 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
 
     }
 
+    private class ViewHolderIncomingImageMessage extends RecyclerView.ViewHolder {
+        View view;
+        TextView time;
+        ImageView message;
+        ViewHolderIncomingImageMessage(View view){
+            super(view);
+            this.view = view;
+            time = (TextView)view.findViewById(R.id.time);
+            message = (ImageView) view.findViewById(R.id.message);
+        }
+
+    }
+
+    private class ViewHolderOutgoingImageMessage extends RecyclerView.ViewHolder {
+        View view;
+        ImageView message;
+        TextView time;
+        ViewHolderOutgoingImageMessage(View view){
+            super(view);
+            this.view = view;
+            message = (ImageView) view.findViewById(R.id.message);
+            time = (TextView)view.findViewById(R.id.time);
+        }
+
+    }
+
     private class ViewHolderOtherMessage extends RecyclerView.ViewHolder {
         View view;
         TextView message;
-        public ViewHolderOtherMessage(View view){
+        ViewHolderOtherMessage(View view){
             super(view);
             this.view = view;
             message = (TextView)view.findViewById(R.id.message);
         }
+    }
 
+
+    private Bitmap parseStringToBitmap(String imageString){
+        Bitmap bitmap = null;
+        final String encodedString = "data:image/jpg;base64,"+imageString;
+        final String pureBase64Encoded = encodedString.substring(encodedString.indexOf(",")  + 1);
+        final byte[] decodedBytes = Base64.decode(pureBase64Encoded, Base64.DEFAULT);
+        bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        return bitmap;
     }
 }

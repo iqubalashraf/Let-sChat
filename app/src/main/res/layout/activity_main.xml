@@ -57,6 +57,26 @@
             android:layout_marginEnd="5dp"
             android:layout_marginRight="5dp"
             android:src="@drawable/ic_send_black_48px"
+            android:visibility="visible"
             android:background="@drawable/solid_circle_green"/>
+
+        <ImageButton
+            android:id="@+id/button_send_image"
+            android:layout_width="47dp"
+            android:layout_height="47dp"
+            android:layout_gravity="center"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:paddingLeft="5dp"
+            android:paddingStart="5dp"
+            android:paddingRight="2dp"
+            android:paddingEnd="2dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/ic_photo_library_48px"
+            android:background="@null"
+            android:visibility="visible"/>
     </LinearLayout>
 </RelativeLayout>
