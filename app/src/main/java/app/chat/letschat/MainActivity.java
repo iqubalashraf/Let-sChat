@@ -18,8 +18,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -64,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ImageButton button_send, button_send_image;
     EditText message_box;
     private boolean isPartnerConnected = false;
+    private static boolean mIsRunning = false;
+    private boolean isGallryVisiable = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +85,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initializeOnClickListner();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mIsRunning = true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mIsRunning = false;
+    }
+
     private void initializeViews() {
         recycler_view = (RecyclerView) findViewById(R.id.recycler_view);
 //        llmProgressRC = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true);
@@ -90,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initializeAdapter() {
-        adapterMainActivity = new AdapterMainActivity(getApplicationContext(), messages);
+        adapterMainActivity = new AdapterMainActivity(activity,getApplicationContext(), messages);
         recycler_view.setAdapter(adapterMainActivity);
     }
 
@@ -111,7 +129,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 socket.emit("join", getObject(), new Ack() {
                                     @Override
                                     public void call(Object... args) {
-                                        Log.d("Socket", "on Join called successfully  ");
+                                        if (Constants.getBuildVersion())
+                                            Log.d("Socket", "on Join called successfully  ");
                                     }
                                 });
 
@@ -205,6 +224,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initializeOnClickListner() {
         button_send.setOnClickListener(this);
         button_send_image.setOnClickListener(this);
+        message_box.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable mEdit) {
+
+                if (mEdit.toString().trim().length() == 0) {
+
+                    if (!isGallryVisiable) {
+                        if (Constants.getBuildVersion())
+                            Log.d("Change Text:  ", " Show gallry button");
+                        showGallryButton();
+                    }
+                    isGallryVisiable = true;
+                } else {
+                    if (isGallryVisiable) {
+                        if (Constants.getBuildVersion())
+                            Log.d("Change Text:  ", " Hide gallry button");
+                        showSendButton();
+                    }
+                    isGallryVisiable = false;
+                }
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        });
     }
 
     private JSONObject getObject() {
@@ -247,9 +294,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         socket.emit("partnerLeft", getObject(), new Ack() {
             @Override
             public void call(Object... args) {
-                Log.d("SocketEmit", "Left");
+                if (Constants.getBuildVersion())
+                    Log.d("SocketEmit", "Left");
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.action_reconnect:
+                socket.emit("partnerLeft", getObject(), new Ack() {
+                    @Override
+                    public void call(Object... args) {
+                        if (Constants.getBuildVersion())
+                            Log.d("SocketEmit", "Left");
+                        socket.emit("join", getObject(), new Ack() {
+                            @Override
+                            public void call(Object... args) {
+                                if (Constants.getBuildVersion())
+                                    Log.d("Socket", "on Join called successfully  ");
+                            }
+                        });
+                    }
+                });
+                break;
+
+            case R.id.action_exit:
+                finish();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void updateAdapter(final Message message) {
@@ -296,24 +384,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_send:
-                if (validateMessage()) {
-                    refreshMessageBox();
-                    socket.emit("createMessage", getMessageObject(), new Ack() {
-                        @Override
-                        public void call(Object... args) {
-                        }
-                    });
-                }
+                if (isPartnerConnected) {
+                    if (validateMessage()) {
+                        socket.emit("createMessage", getMessageObject(), new Ack() {
+                            @Override
+                            public void call(Object... args) {
+                            }
+                        });
+                        refreshMessageBox();
+                    }
+                } else
+                    Toast.makeText(getApplicationContext(), "Partner not connected", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.button_send_image:
-//                Intent intent = new Intent();
-//                intent.setType("image/*");
-//                intent.setAction(Intent.ACTION_GET_CONTENT);
-//                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_PICK);
-                startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
+                if (isPartnerConnected) {
+//                    Intent intent = new Intent();
+//                    intent.setType("image/*");
+//                    intent.setAction(Intent.ACTION_GET_CONTENT);
+//                    startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_PICK);
+                    startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
+                } else
+                    Toast.makeText(getApplicationContext(), "Partner not connected", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -336,22 +430,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void displayDisconnectPopup() {
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                builder.setTitle("Internet problem");
-                builder.setMessage("Disconnected from Server")
-                        .setCancelable(false)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                finish();
-                            }
-                        });
-                AlertDialog alert = builder.create();
-                alert.show();
-            }
-        });
+        if (mIsRunning)
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                    builder.setTitle("Internet problem");
+                    builder.setMessage("Disconnected from Server")
+                            .setCancelable(false)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    finish();
+                                }
+                            });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }
+            });
     }
 
     @Override
@@ -399,13 +494,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void uploadImage(final Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Bitmap converetdImage = getResizedBitmap(bitmap, 800);
-        Log.d(TAG, ""+converetdImage.getByteCount());
-        Log.d(TAG, ""+bitmap.getByteCount());
+        Bitmap converetdImage = getResizedBitmap(bitmap, 1000);
+        Log.d(TAG, "" + converetdImage.getByteCount());
+        Log.d(TAG, "" + bitmap.getByteCount());
         converetdImage.compress(Bitmap.CompressFormat.JPEG, 50, baos);
         byte[] imageBytes = baos.toByteArray();
         final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        Toast.makeText(getApplicationContext(),"Uploading message in background.",Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Uploading message in background.", Toast.LENGTH_SHORT).show();
         socket.emit("createImageMessage", getImageObject(imageString), new Ack() {
             @Override
             public void call(Object... args) {
@@ -417,18 +512,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         boolean useWhiteIcon = (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP);
         return useWhiteIcon ? R.drawable.ic_forum_white_48px : R.drawable.ic_forum_brand_color_48px;
     }
+
     public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        float bitmapRatio = (float)width / (float) height;
+        float bitmapRatio = (float) width / (float) height;
         if (bitmapRatio > 1) {
-            width = maxSize;
+            width = getSmallerNumber(width, maxSize);
             height = (int) (width / bitmapRatio);
         } else {
-            height = maxSize;
+            height = getSmallerNumber(height, maxSize);
             width = (int) (height * bitmapRatio);
         }
         return Bitmap.createScaledBitmap(image, width, height, true);
+    }
+
+    private void showGallryButton() {
+        button_send_image.setVisibility(View.VISIBLE);
+        button_send.setVisibility(View.GONE);
+    }
+
+    private void showSendButton() {
+        button_send_image.setVisibility(View.GONE);
+        button_send.setVisibility(View.VISIBLE);
+    }
+
+    private int getSmallerNumber(int number1, int number2) {
+        if (number1 > number2) {
+            return number2;
+        } else {
+            return number1;
+        }
     }
 }

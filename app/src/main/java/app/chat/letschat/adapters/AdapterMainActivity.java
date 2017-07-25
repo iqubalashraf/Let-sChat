@@ -1,6 +1,8 @@
 package app.chat.letschat.adapters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import app.chat.letschat.GenralUtils;
+import app.chat.letschat.ImageClass;
 import app.chat.letschat.R;
 import app.chat.letschat.dataModel.Message;
 
@@ -22,17 +25,20 @@ import app.chat.letschat.dataModel.Message;
  */
 
 public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private final String IMAGE_STRING = "app.chat.letschat.IMAGE_STRING";
     private final int VIEW_TYPE_INCOMING_MESSAGE = 2;
     private final int VIEW_TYPE_OUTGOING_MESSAGE = 1;
     private final int VIEW_TYPE_OTHER_MESSAGE = 3;
     private final int VIEW_TYPE_INCOMING_IMAGE_MESSAGE = 5;
     private final int VIEW_TYPE_OUTGOING_IMAGE_MESSAGE = 4;
     Context context;
+    Activity activity;
     List<Message> messages;
 
-    public AdapterMainActivity(Context context, List<Message> messages) {
+    public AdapterMainActivity(Activity activity, Context context, List<Message> messages) {
         super();
         this.context = context;
+        this.activity = activity;
         this.messages = messages;
     }
     @Override
@@ -53,7 +59,7 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder,final int position) {
         if(holder instanceof ViewHolderIncomingMessage){
             ((ViewHolderIncomingMessage) holder).message.setText(messages.get(position).getText());
             ((ViewHolderIncomingMessage) holder).time.setText(GenralUtils.getFormattedTime(messages.get(position).getCreatedAt()));
@@ -64,9 +70,25 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
             ((ViewHolderOtherMessage) holder).message.setText(messages.get(position).getText());
         }else if(holder instanceof ViewHolderIncomingImageMessage){
             ((ViewHolderIncomingImageMessage) holder).message.setImageBitmap(parseStringToBitmap(messages.get(position).getText()));
+            ((ViewHolderIncomingImageMessage) holder).message.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(activity, ImageClass.class);
+                    intent.putExtra(IMAGE_STRING,messages.get(position).getText());
+                    activity.startActivity(intent);
+                }
+            });
             ((ViewHolderIncomingImageMessage) holder).time.setText(GenralUtils.getFormattedTime(messages.get(position).getCreatedAt()));
         }else if(holder instanceof ViewHolderOutgoingImageMessage){
             ((ViewHolderOutgoingImageMessage) holder).message.setImageBitmap(parseStringToBitmap(messages.get(position).getText()));
+            ((ViewHolderOutgoingImageMessage) holder).message.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(activity, ImageClass.class);
+                    intent.putExtra(IMAGE_STRING,messages.get(position).getText());
+                    activity.startActivity(intent);
+                }
+            });
             ((ViewHolderOutgoingImageMessage) holder).time.setText(GenralUtils.getFormattedTime(messages.get(position).getCreatedAt()));
         }
 //        switch (messages.get(position).getViewType()){

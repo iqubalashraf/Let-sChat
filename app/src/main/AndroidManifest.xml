@@ -4,8 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!--<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
+    <!--<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />-->
 
     <application
         android:name=".AppClass"
@@ -23,6 +23,7 @@
         </activity>
         <activity android:name=".MainActivity" android:theme="@style/AppTheme"/>
         <activity android:name=".RegisterActivity"/>
+        <activity android:name=".ImageClass"/>
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="65ed5028a938829c16a1d52dbcb22882569080d1" />
