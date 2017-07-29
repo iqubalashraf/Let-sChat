@@ -12,8 +12,11 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -35,12 +38,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import app.chat.letschat.adapters.AdapterMainActivity;
+import app.chat.letschat.dataModel.AppVersion;
 import app.chat.letschat.dataModel.Message;
 import io.socket.client.Ack;
 import io.socket.client.IO;
@@ -49,27 +56,32 @@ import io.socket.emitter.Emitter;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private final String TAG = "MainActivity";
-    private final String SERVER_IP_ADDRESS = "https://vast-dusk-15119.herokuapp.com/";
-    //    private final String SERVER_IP_ADDRESS = "http://192.168.0.4:3000/";
-    private final String USER_NAME = "app.chat.letschat.USER_NAME";
-    private final String USER_GENDER = "app.chat.letschat.USER_GENDER";
-    private final int PICK_IMAGE_REQUEST = 121;
-    private final int NOTIFICATION_ID = 786687;
-    private final int MALE = 0, FEMALE = 1;
-    private String user_name = "";
-    private int gender = 2;
-    Socket socket;
+    private static final String TAG = "MainActivity";
+    private static final String SERVER_IP_ADDRESS = "https://vast-dusk-15119.herokuapp.com/";
+    //        private final String SERVER_IP_ADDRESS = "http://192.168.0.6:3000/";
+    private static final String USER_NAME = "app.chat.letschat.USER_NAME";
+    private static final String USER_GENDER = "app.chat.letschat.USER_GENDER";
+    private final String USER_AGE = "app.chat.letschat.USER_AGE";
+    private static final int PICK_IMAGE_REQUEST = 121;
+    private static final int CAMERA_REQUEST = 122;
+    private static final int NOTIFICATION_ID = 786687;
+    private static final int NOTIFICATION_UPDATE_ID = 78687;
+    private static final int MALE = 0, FEMALE = 1;
+    private static String user_name = "";
+    private static int gender = 2;
+    private static int age = 27;
+    private static int k = 0;
+    static Socket socket;
     private AdapterMainActivity adapterMainActivity;
     private RecyclerView recycler_view;
-    private LinearLayoutManager llmProgressRC;
     List<Message> messages = new ArrayList<>();
     public Activity activity;
-    ImageButton button_send, button_send_image;
+    ImageButton button_send, button_send_image, button_send_camera_image;
     EditText message_box;
-    private boolean isPartnerConnected = false;
+    private static boolean isPartnerConnected = false;
     private static boolean mIsRunning = false;
-    private boolean isGallryVisiable = true;
+    private static boolean isGallryVisiable = true;
+    static String mCurrentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = getIntent();
         user_name = intent.getStringExtra(USER_NAME);
         gender = intent.getIntExtra(USER_GENDER, 2);
+        age = intent.getIntExtra(USER_AGE, 27);
         initializeViews();
         initializeSocket();
         initializeAdapter();
@@ -105,10 +118,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         button_send = (ImageButton) findViewById(R.id.button_send);
         message_box = (EditText) findViewById(R.id.message_box);
         button_send_image = (ImageButton) findViewById(R.id.button_send_image);
+        button_send_camera_image = (ImageButton) findViewById(R.id.button_send_camera_image);
     }
 
     private void initializeAdapter() {
-        adapterMainActivity = new AdapterMainActivity(activity,getApplicationContext(), messages);
+        adapterMainActivity = new AdapterMainActivity(activity, getApplicationContext(), messages);
         recycler_view.setAdapter(adapterMainActivity);
     }
 
@@ -125,7 +139,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             public void call(Object... args) {
                                 if (Constants.getBuildVersion())
                                     Log.d("Socket", "Connected to server");
-
                                 socket.emit("join", getObject(), new Ack() {
                                     @Override
                                     public void call(Object... args) {
@@ -133,6 +146,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             Log.d("Socket", "on Join called successfully  ");
                                     }
                                 });
+//                                socket.emit("getUserListNotConnected", null, new Ack() {
+//                                    @Override
+//                                    public void call(Object... args) {
+//
+//                                    }
+//                                });
+//                                socket.emit("getUserListConnected", null, new Ack() {
+//                                    @Override
+//                                    public void call(Object... args) {
+//
+//                                    }
+//                                });
+
 
                             }
                         });
@@ -174,7 +200,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             public void call(Object... args) {
                                 Message message = new Gson().fromJson(args[0].toString(), Message.class);
                                 updateAdapter(message);
-//                                sendNotification("Connected",message.getText(),NOTIFICATION_ID);
+                                if (Constants.getBuildVersion())
+                                    sendNotification("Connected", message.getText(), NOTIFICATION_ID);
                                 isPartnerConnected = true;
                                 if (Constants.getBuildVersion())
                                     Log.d("New Message", message.getText());
@@ -187,14 +214,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 Message message = new Gson().fromJson(args[0].toString(), Message.class);
                                 updateAdapter(message);
                                 isPartnerConnected = false;
-                                socket.emit("join", getObject(), new Ack() {
-                                    @Override
-                                    public void call(Object... args) {
-                                        Log.d("Socket", "on Join called successfully  ");
-                                    }
-                                });
+//                                socket.emit("join", getObject(), new Ack() {
+//                                    @Override
+//                                    public void call(Object... args) {
+//                                        Log.d("Socket", "on Join called successfully  ");
+//                                    }
+//                                });
                                 if (Constants.getBuildVersion())
                                     Log.d("New Message", message.getText());
+                            }
+                        });
+
+                        socket.on("appVersion", new Emitter.Listener() {
+                            @Override
+                            public void call(Object... args) {
+                                AppVersion appVersion = new Gson().fromJson(args[0].toString(), AppVersion.class);
+                                if (appVersion.getVersionCode() > BuildConfig.VERSION_CODE)
+                                    sendUpdateNotification("Update found", "New version available", NOTIFICATION_UPDATE_ID);
                             }
                         });
 
@@ -204,6 +240,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 displayDisconnectPopup();
                             }
                         });
+
+                        /*socket.on("userListConnected", new Emitter.Listener() {
+                            @Override
+                            public void call(Object... args) {
+                                Log.d(TAG, args[0].toString());
+                            }
+                        });
+                        socket.on("userListNotConnected", new Emitter.Listener() {
+                            @Override
+                            public void call(Object... args) {
+                                Log.d(TAG, args[0].toString());
+                            }
+                        });*/
+
+
                         socket.connect();
 
                     } catch (URISyntaxException e) {
@@ -224,6 +275,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initializeOnClickListner() {
         button_send.setOnClickListener(this);
         button_send_image.setOnClickListener(this);
+        button_send_camera_image.setOnClickListener(this);
         message_box.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable mEdit) {
@@ -259,6 +311,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             jsonObject.put("name", user_name);
             jsonObject.put("gender", gender);
+            jsonObject.put("age", age);
             jsonObject.put("country", "India");
         } catch (JSONException e) {
             e.printStackTrace();
@@ -298,6 +351,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d("SocketEmit", "Left");
             }
         });
+        closeApp();
     }
 
     @Override
@@ -355,9 +409,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onBackPressed() {
-//        Intent intent = new Intent(this, RegisterActivity.class);
-//        startActivity(intent);
-//        finish();
         if (isPartnerConnected) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Cancel Chat");
@@ -376,7 +427,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             AlertDialog alert = builder.create();
             alert.show();
         } else {
-            super.onBackPressed();
+            k++;
+            if (k == 1) {
+                Toast.makeText(this, "Press again to exit", Toast.LENGTH_SHORT).show();
+                try {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            k = 0;
+                        }
+                    }, 3000);
+                } catch (Exception e) {
+                    if (Constants.getBuildVersion())
+                        e.printStackTrace();
+                }
+            } else {
+                finish();
+            }
         }
     }
 
@@ -394,7 +461,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         refreshMessageBox();
                     }
                 } else
-                    Toast.makeText(getApplicationContext(), "Partner not connected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.button_send_image:
                 if (isPartnerConnected) {
@@ -407,8 +474,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     intent.setAction(Intent.ACTION_PICK);
                     startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
                 } else
-                    Toast.makeText(getApplicationContext(), "Partner not connected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
                 break;
+
+            case R.id.button_send_camera_image:
+                if (isPartnerConnected) {
+//                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+//                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                    dispatchTakePictureIntent();
+                } else
+                    Toast.makeText(getApplicationContext(), getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -430,23 +505,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void displayDisconnectPopup() {
-        if (mIsRunning)
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                    builder.setTitle("Internet problem");
-                    builder.setMessage("Disconnected from Server")
-                            .setCancelable(false)
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    finish();
-                                }
-                            });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                }
-            });
+        try {
+            if (mIsRunning)
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                        builder.setTitle("Internet problem");
+                        builder.setMessage("Disconnected from Server")
+                                .setCancelable(false)
+                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        finish();
+                                    }
+                                });
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    }
+                });
+        } catch (Exception e) {
+            if (Constants.getBuildVersion())
+                e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -464,6 +545,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (Constants.getBuildVersion())
                     e.printStackTrace();
             }
+        } else if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
+            try {
+                uploadImage(setPic());
+            } catch (Exception e) {
+                if (Constants.getBuildVersion())
+                    e.printStackTrace();
+            }
         }
     }
 
@@ -472,7 +560,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setAction("android.intent.action.MAIN");
         intent.addCategory("android.intent.category.LAUNCHER");
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, count /* Request code */, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Bitmap icon = BitmapFactory.decodeResource(getResources(),
+                R.mipmap.ic_launcher);
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(getNotificationIcon()).setWhen(0)
+                .setContentTitle(title)
+                .setContentText(info)
+                .setAutoCancel(true)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(info))
+                .setSound(defaultSoundUri)
+                .setContentIntent(pendingIntent)
+                .setColor(Color.parseColor(getString(R.string.brand_color)))
+                .setLargeIcon(icon);
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        notificationManager.notify(count /* ID of notification */, notificationBuilder.build());
+    }
+
+    private void sendUpdateNotification(String title, String info, int count) {
+        final String appPackageName = getPackageName(); // getPackageName() from Context or Activity object
+        Intent intent;
+        try {
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName));
+        } catch (android.content.ActivityNotFoundException anfe) {
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName));
+        }
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, count /* Request code */, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Bitmap icon = BitmapFactory.decodeResource(getResources(),
                 R.mipmap.ic_launcher);
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -500,7 +616,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         converetdImage.compress(Bitmap.CompressFormat.JPEG, 50, baos);
         byte[] imageBytes = baos.toByteArray();
         final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        Toast.makeText(getApplicationContext(), "Uploading message in background.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Sending message in background.", Toast.LENGTH_SHORT).show();
         socket.emit("createImageMessage", getImageObject(imageString), new Ack() {
             @Override
             public void call(Object... args) {
@@ -530,11 +646,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void showGallryButton() {
         button_send_image.setVisibility(View.VISIBLE);
+        button_send_camera_image.setVisibility(View.VISIBLE);
         button_send.setVisibility(View.GONE);
     }
 
     private void showSendButton() {
         button_send_image.setVisibility(View.GONE);
+        button_send_camera_image.setVisibility(View.GONE);
         button_send.setVisibility(View.VISIBLE);
     }
 
@@ -544,5 +662,68 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             return number1;
         }
+    }
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+                Toast.makeText(getApplicationContext(), "Unable to capture image.", Toast.LENGTH_SHORT).show();
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.example.android.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, CAMERA_REQUEST);
+            } else {
+                Toast.makeText(getApplicationContext(), "Unable to capture image.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getApplicationContext(), "Unable to capture image.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String imageFileName = "temp";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+    private Bitmap setPic() {
+
+        // Get the dimensions of the bitmap
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+
+
+        // Decode the image file into a Bitmap sized to fill the View
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = 1;
+        bmOptions.inPurgeable = true;
+
+        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        return bitmap;
+    }
+
+    public void closeApp() {
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 }

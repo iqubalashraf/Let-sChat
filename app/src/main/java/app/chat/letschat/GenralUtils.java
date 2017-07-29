@@ -1,6 +1,7 @@
 package app.chat.letschat;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,6 +11,7 @@ import java.util.Date;
  */
 
 public class GenralUtils {
+    private static final String SHARED_PREFERENCES_KEY = "app.chat.letschat";
     public static final String dateFormat = "hh:mm a";
     private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
 
@@ -41,5 +43,55 @@ public class GenralUtils {
     public static String getFormattedTime(String unixTime){
         Date date = new Date(Long.parseLong(unixTime));
         return simpleDateFormat.format(date);
+    }
+    public static boolean isShareDialogShown(Context context){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        return prefs.getBoolean("isShareDialogShown", false);
+    }
+    public static void isShareDialogShown(Context context, boolean value){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("isShareDialogShown", value);
+        editor.apply();
+    }
+    public static boolean isRegistered(Context context){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        return prefs.getBoolean("isRegistered", false);
+    }
+    public static void isRegistered(Context context, boolean value){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("isRegistered", value);
+        editor.apply();
+    }
+    public static String userName(Context context){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        return prefs.getString("userName", "");
+    }
+    public static void userName(Context context, String name){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("userName", name);
+        editor.apply();
+    }
+    public static int userGender(Context context){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        return prefs.getInt("userGender", 2);
+    }
+    public static void userGender(Context context, int gender){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("userGender", gender);
+        editor.apply();
+    }
+    public static int userAge(Context context){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        return prefs.getInt("userAge", 27);
+    }
+    public static void userAge(Context context, int age){
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("userAge", age);
+        editor.apply();
     }
 }
