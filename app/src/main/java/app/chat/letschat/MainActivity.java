@@ -56,7 +56,7 @@ import io.socket.emitter.Emitter;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
     private static final String SERVER_IP_ADDRESS = "https://vast-dusk-15119.herokuapp.com/";
-    //        private final String SERVER_IP_ADDRESS = "http://192.168.0.6:3000/";
+//    private final String SERVER_IP_ADDRESS = "http://192.168.0.7:3000/";
     private static final String USER_NAME = "app.chat.letschat.USER_NAME";
     private static final String USER_GENDER = "app.chat.letschat.USER_GENDER";
     private static final int PICK_IMAGE_REQUEST = 121;
@@ -288,6 +288,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             jsonObject.put("age", age);
             jsonObject.put("unique_id",Constants.getDeviceUniqueId(context));
             jsonObject.put("country",Constants.getCountryCode(context));
+            jsonObject.put("VERSION_NAME",BuildConfig.VERSION_NAME);
+            jsonObject.put("VERSION_CODE",BuildConfig.VERSION_CODE);
         } catch (JSONException e) {
             e.printStackTrace();
         }
