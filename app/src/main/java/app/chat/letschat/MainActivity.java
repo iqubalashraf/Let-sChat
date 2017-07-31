@@ -41,9 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import app.chat.letschat.adapters.AdapterMainActivity;
@@ -61,33 +59,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //        private final String SERVER_IP_ADDRESS = "http://192.168.0.6:3000/";
     private static final String USER_NAME = "app.chat.letschat.USER_NAME";
     private static final String USER_GENDER = "app.chat.letschat.USER_GENDER";
-    private final String USER_AGE = "app.chat.letschat.USER_AGE";
     private static final int PICK_IMAGE_REQUEST = 121;
     private static final int CAMERA_REQUEST = 122;
     private static final int NOTIFICATION_ID = 786687;
     private static final int NOTIFICATION_UPDATE_ID = 78687;
     private static final int MALE = 0, FEMALE = 1;
+    static Socket socket;
+    static String mCurrentPhotoPath;
     private static String user_name = "";
     private static int gender = 2;
     private static int age = 27;
     private static int k = 0;
-    static Socket socket;
-    private AdapterMainActivity adapterMainActivity;
-    private RecyclerView recycler_view;
-    List<Message> messages = new ArrayList<>();
-    public Activity activity;
-    ImageButton button_send, button_send_image, button_send_camera_image;
-    EditText message_box;
     private static boolean isPartnerConnected = false;
     private static boolean mIsRunning = false;
     private static boolean isGallryVisiable = true;
-    static String mCurrentPhotoPath;
+    private final String USER_AGE = "app.chat.letschat.USER_AGE";
+    public Activity activity;
+    private Context context;
+    List<Message> messages = new ArrayList<>();
+    ImageButton button_send, button_send_image, button_send_camera_image;
+    EditText message_box;
+    boolean isOpened = false;
+    private AdapterMainActivity adapterMainActivity;
+    private RecyclerView recycler_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.chat_background_2));
         activity = this;
+        context = getApplicationContext();
         Intent intent = getIntent();
         user_name = intent.getStringExtra(USER_NAME);
         gender = intent.getIntExtra(USER_GENDER, 2);
@@ -112,7 +114,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initializeViews() {
         recycler_view = (RecyclerView) findViewById(R.id.recycler_view);
-//        llmProgressRC = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true);
         recycler_view.setLayoutManager(new LinearLayoutManager(this));
         recycler_view.setHasFixedSize(true);
         button_send = (ImageButton) findViewById(R.id.button_send);
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initializeAdapter() {
-        adapterMainActivity = new AdapterMainActivity(activity, getApplicationContext(), messages);
+        adapterMainActivity = new AdapterMainActivity(activity, context, messages);
         recycler_view.setAdapter(adapterMainActivity);
     }
 
@@ -146,19 +147,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             Log.d("Socket", "on Join called successfully  ");
                                     }
                                 });
-//                                socket.emit("getUserListNotConnected", null, new Ack() {
-//                                    @Override
-//                                    public void call(Object... args) {
-//
-//                                    }
-//                                });
-//                                socket.emit("getUserListConnected", null, new Ack() {
-//                                    @Override
-//                                    public void call(Object... args) {
-//
-//                                    }
-//                                });
-
 
                             }
                         });
@@ -240,21 +228,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 displayDisconnectPopup();
                             }
                         });
-
-                        /*socket.on("userListConnected", new Emitter.Listener() {
-                            @Override
-                            public void call(Object... args) {
-                                Log.d(TAG, args[0].toString());
-                            }
-                        });
-                        socket.on("userListNotConnected", new Emitter.Listener() {
-                            @Override
-                            public void call(Object... args) {
-                                Log.d(TAG, args[0].toString());
-                            }
-                        });*/
-
-
                         socket.connect();
 
                     } catch (URISyntaxException e) {
@@ -276,6 +249,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         button_send.setOnClickListener(this);
         button_send_image.setOnClickListener(this);
         button_send_camera_image.setOnClickListener(this);
+        message_box.setOnClickListener(this);
         message_box.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable mEdit) {
@@ -312,7 +286,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             jsonObject.put("name", user_name);
             jsonObject.put("gender", gender);
             jsonObject.put("age", age);
-            jsonObject.put("country", "India");
+            jsonObject.put("unique_id",Constants.getDeviceUniqueId(context));
+            jsonObject.put("country",Constants.getCountryCode(context));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -401,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 messages.add(message);
                 adapterMainActivity.setMessages(messages);
                 adapterMainActivity.notifyDataSetChanged();
-                recycler_view.scrollToPosition(messages.size() - 1);
+                scrollToBottom();
             }
         });
 
@@ -461,7 +436,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         refreshMessageBox();
                     }
                 } else
-                    Toast.makeText(getApplicationContext(), getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.button_send_image:
                 if (isPartnerConnected) {
@@ -474,7 +449,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     intent.setAction(Intent.ACTION_PICK);
                     startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
                 } else
-                    Toast.makeText(getApplicationContext(), getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.button_send_camera_image:
@@ -483,7 +458,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
                     dispatchTakePictureIntent();
                 } else
-                    Toast.makeText(getApplicationContext(), getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.message_box:
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        scrollToBottom();
+                    }
+                },600);
+                break;
+            default:
+                break;
         }
     }
 
@@ -616,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         converetdImage.compress(Bitmap.CompressFormat.JPEG, 50, baos);
         byte[] imageBytes = baos.toByteArray();
         final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        Toast.makeText(getApplicationContext(), "Sending message in background.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Sending message in background.", Toast.LENGTH_SHORT).show();
         socket.emit("createImageMessage", getImageObject(imageString), new Ack() {
             @Override
             public void call(Object... args) {
@@ -674,7 +660,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 photoFile = createImageFile();
             } catch (IOException ex) {
                 // Error occurred while creating the File
-                Toast.makeText(getApplicationContext(), "Unable to capture image.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Unable to capture image.", Toast.LENGTH_SHORT).show();
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
@@ -684,10 +670,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, CAMERA_REQUEST);
             } else {
-                Toast.makeText(getApplicationContext(), "Unable to capture image.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Unable to capture image.", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(getApplicationContext(), "Unable to capture image.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Unable to capture image.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -723,7 +709,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return bitmap;
     }
 
-    public void closeApp() {
+    private void closeApp() {
         android.os.Process.killProcess(android.os.Process.myPid());
+    }
+
+    private void scrollToBottom() {
+        recycler_view.scrollToPosition(messages.size() - 1);
     }
 }

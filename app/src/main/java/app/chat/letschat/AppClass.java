@@ -3,7 +3,9 @@ package app.chat.letschat;
 import android.app.Application;
 import android.content.Context;
 import android.util.Log;
+
 import com.crashlytics.android.Crashlytics;
+
 import io.fabric.sdk.android.Fabric;
 
 /**
@@ -12,16 +14,26 @@ import io.fabric.sdk.android.Fabric;
 
 public class AppClass extends Application {
 
+    public static final String TAG = AppClass.class.getSimpleName();
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
     private static final String TWITTER_KEY = "ETni5mdYRVBjlmJzju9r7R8tR";
     private static final String TWITTER_SECRET = "tHOzGLTMjjMREgeCSV968FLf9BVXSmuVp8F0zy5ZdeVIsnxjcF";
-
-
-    public static final String TAG = AppClass.class.getSimpleName();
-
     private static Context context;
 
     private static AppClass mInstance;
+
+    public static synchronized AppClass getInstance() {
+
+        if (mInstance == null) {
+            mInstance = new AppClass();
+        }
+        return mInstance;
+    }
+
+    public static Context getContext() {
+        return context;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -34,19 +46,8 @@ public class AppClass extends Application {
 //        }
         context = getApplicationContext();
         mInstance = this;
-        if(Constants.getBuildVersion())
-            Log.d(TAG,"Analaytic tracker calls");
-    }
-
-    public static synchronized AppClass getInstance() {
-
-        if (mInstance == null) {
-            mInstance = new AppClass();
-        }
-        return mInstance;
-    }
-    public static Context getContext() {
-        return context;
+        if (Constants.getBuildVersion())
+            Log.d(TAG, "Analaytic tracker calls");
     }
 //    private void logUser() {
 //        // TODO: Use the current user's information

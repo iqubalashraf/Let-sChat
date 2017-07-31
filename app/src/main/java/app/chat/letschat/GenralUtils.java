@@ -11,10 +11,7 @@ import java.util.Date;
  */
 
 public class GenralUtils {
-    private static final String SHARED_PREFERENCES_KEY = "app.chat.letschat";
     public static final String dateFormat = "hh:mm a";
-    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
-
     public static final String DATE_FORMAT_ddMMyy = "ddMMyy";
     public static final String DATE_FORMAT_yyyy_dash_MM_dash_dd = "yyyy-MM-dd";
     public static final String DATE_FORMAT_dd_dash_MMM_dash_yyyy = "dd-MMM-yyyy";
@@ -31,64 +28,74 @@ public class GenralUtils {
     public static final String DATE_FORMAT_dd_space_MMM_space_yyyy = "dd MMM yyyy";
     public static final String DATE_FORMAT_dd_dot_MMM_dot_yyyy = "dd.MMM.yyyy";
     public static final String DATE_FORMAT_yyyy_dash_MM_dash_dd_space_HH_colon_mm_colon_ss = "yyyy-MM-dd HH:mm:ss";
-    public static final String DATE_FORMAT_dd_dash_MMM_dash_yyyy_comma_HH_colon_mm_colon_am_pm="dd-MMM-yyyy, HH:mm a";
-
-
+    public static final String DATE_FORMAT_dd_dash_MMM_dash_yyyy_comma_HH_colon_mm_colon_am_pm = "dd-MMM-yyyy, HH:mm a";
+    private static final String SHARED_PREFERENCES_KEY = "app.chat.letschat";
+    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
 
 
     public static boolean checkConnection(Context context) {
         return AppStatus.getInstance(context).isOnline();
     }
 
-    public static String getFormattedTime(String unixTime){
+    public static String getFormattedTime(String unixTime) {
         Date date = new Date(Long.parseLong(unixTime));
         return simpleDateFormat.format(date);
     }
-    public static boolean isShareDialogShown(Context context){
+
+    public static boolean isShareDialogShown(Context context) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         return prefs.getBoolean("isShareDialogShown", false);
     }
-    public static void isShareDialogShown(Context context, boolean value){
+
+    public static void isShareDialogShown(Context context, boolean value) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("isShareDialogShown", value);
         editor.apply();
     }
-    public static boolean isRegistered(Context context){
+
+    public static boolean isRegistered(Context context) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         return prefs.getBoolean("isRegistered", false);
     }
-    public static void isRegistered(Context context, boolean value){
+
+    public static void isRegistered(Context context, boolean value) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("isRegistered", value);
         editor.apply();
     }
-    public static String userName(Context context){
+
+    public static String userName(Context context) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         return prefs.getString("userName", "");
     }
-    public static void userName(Context context, String name){
+
+    public static void userName(Context context, String name) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("userName", name);
         editor.apply();
     }
-    public static int userGender(Context context){
+
+    public static int userGender(Context context) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         return prefs.getInt("userGender", 2);
     }
-    public static void userGender(Context context, int gender){
+
+    public static void userGender(Context context, int gender) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt("userGender", gender);
         editor.apply();
     }
-    public static int userAge(Context context){
+
+    public static int userAge(Context context) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         return prefs.getInt("userAge", 27);
     }
-    public static void userAge(Context context, int age){
+
+    public static void userAge(Context context, int age) {
         final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt("userAge", age);

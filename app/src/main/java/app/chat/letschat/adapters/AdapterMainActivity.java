@@ -41,9 +41,10 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
         this.activity = activity;
         this.messages = messages;
     }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        switch (messages.get(viewType).getViewType()){
+        switch (messages.get(viewType).getViewType()) {
             case VIEW_TYPE_INCOMING_MESSAGE:
                 return new ViewHolderIncomingMessage(LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_incoming_message, parent, false));
             case VIEW_TYPE_OUTGOING_MESSAGE:
@@ -59,33 +60,33 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder,final int position) {
-        if(holder instanceof ViewHolderIncomingMessage){
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+        if (holder instanceof ViewHolderIncomingMessage) {
             ((ViewHolderIncomingMessage) holder).message.setText(messages.get(position).getText());
             ((ViewHolderIncomingMessage) holder).time.setText(GenralUtils.getFormattedTime(messages.get(position).getCreatedAt()));
-        }else if(holder instanceof ViewHolderOutgoingMessage){
+        } else if (holder instanceof ViewHolderOutgoingMessage) {
             ((ViewHolderOutgoingMessage) holder).message.setText(messages.get(position).getText());
             ((ViewHolderOutgoingMessage) holder).time.setText(GenralUtils.getFormattedTime(messages.get(position).getCreatedAt()));
-        }else if(holder instanceof ViewHolderOtherMessage){
+        } else if (holder instanceof ViewHolderOtherMessage) {
             ((ViewHolderOtherMessage) holder).message.setText(messages.get(position).getText());
-        }else if(holder instanceof ViewHolderIncomingImageMessage){
+        } else if (holder instanceof ViewHolderIncomingImageMessage) {
             ((ViewHolderIncomingImageMessage) holder).message.setImageBitmap(parseStringToBitmap(messages.get(position).getText()));
             ((ViewHolderIncomingImageMessage) holder).message.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(activity, ImageClass.class);
-                    intent.putExtra(IMAGE_STRING,messages.get(position).getText());
+                    intent.putExtra(IMAGE_STRING, messages.get(position).getText());
                     activity.startActivity(intent);
                 }
             });
             ((ViewHolderIncomingImageMessage) holder).time.setText(GenralUtils.getFormattedTime(messages.get(position).getCreatedAt()));
-        }else if(holder instanceof ViewHolderOutgoingImageMessage){
+        } else if (holder instanceof ViewHolderOutgoingImageMessage) {
             ((ViewHolderOutgoingImageMessage) holder).message.setImageBitmap(parseStringToBitmap(messages.get(position).getText()));
             ((ViewHolderOutgoingImageMessage) holder).message.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(activity, ImageClass.class);
-                    intent.putExtra(IMAGE_STRING,messages.get(position).getText());
+                    intent.putExtra(IMAGE_STRING, messages.get(position).getText());
                     activity.startActivity(intent);
                 }
             });
@@ -113,19 +114,30 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
     public int getItemCount() {
         return messages.size();
     }
-    public void setMessages (List<Message> messages){
+
+    public void setMessages(List<Message> messages) {
         this.messages = messages;
+    }
+
+    private Bitmap parseStringToBitmap(String imageString) {
+        Bitmap bitmap = null;
+        final String encodedString = "data:image/jpg;base64," + imageString;
+        final String pureBase64Encoded = encodedString.substring(encodedString.indexOf(",") + 1);
+        final byte[] decodedBytes = Base64.decode(pureBase64Encoded, Base64.DEFAULT);
+        bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        return bitmap;
     }
 
     private class ViewHolderIncomingMessage extends RecyclerView.ViewHolder {
         View view;
         TextView time;
         TextView message;
-        ViewHolderIncomingMessage(View view){
+
+        ViewHolderIncomingMessage(View view) {
             super(view);
             this.view = view;
-            time = (TextView)view.findViewById(R.id.time);
-            message = (TextView)view.findViewById(R.id.message);
+            time = (TextView) view.findViewById(R.id.time);
+            message = (TextView) view.findViewById(R.id.message);
         }
 
     }
@@ -134,11 +146,12 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
         View view;
         TextView message;
         TextView time;
-        ViewHolderOutgoingMessage(View view){
+
+        ViewHolderOutgoingMessage(View view) {
             super(view);
             this.view = view;
-            message = (TextView)view.findViewById(R.id.message);
-            time = (TextView)view.findViewById(R.id.time);
+            message = (TextView) view.findViewById(R.id.message);
+            time = (TextView) view.findViewById(R.id.time);
         }
 
     }
@@ -147,10 +160,11 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
         View view;
         TextView time;
         ImageView message;
-        ViewHolderIncomingImageMessage(View view){
+
+        ViewHolderIncomingImageMessage(View view) {
             super(view);
             this.view = view;
-            time = (TextView)view.findViewById(R.id.time);
+            time = (TextView) view.findViewById(R.id.time);
             message = (ImageView) view.findViewById(R.id.message);
         }
 
@@ -160,11 +174,12 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
         View view;
         ImageView message;
         TextView time;
-        ViewHolderOutgoingImageMessage(View view){
+
+        ViewHolderOutgoingImageMessage(View view) {
             super(view);
             this.view = view;
             message = (ImageView) view.findViewById(R.id.message);
-            time = (TextView)view.findViewById(R.id.time);
+            time = (TextView) view.findViewById(R.id.time);
         }
 
     }
@@ -172,20 +187,11 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
     private class ViewHolderOtherMessage extends RecyclerView.ViewHolder {
         View view;
         TextView message;
-        ViewHolderOtherMessage(View view){
+
+        ViewHolderOtherMessage(View view) {
             super(view);
             this.view = view;
-            message = (TextView)view.findViewById(R.id.message);
+            message = (TextView) view.findViewById(R.id.message);
         }
-    }
-
-
-    private Bitmap parseStringToBitmap(String imageString){
-        Bitmap bitmap = null;
-        final String encodedString = "data:image/jpg;base64,"+imageString;
-        final String pureBase64Encoded = encodedString.substring(encodedString.indexOf(",")  + 1);
-        final byte[] decodedBytes = Base64.decode(pureBase64Encoded, Base64.DEFAULT);
-        bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-        return bitmap;
     }
 }

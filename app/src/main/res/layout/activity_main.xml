@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/chat_background_2"
     tools:context="app.chat.letschat.MainActivity">
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/footer"/>
+        android:layout_above="@+id/footer" />
 
     <LinearLayout
         android:id="@+id/footer"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:orientation="horizontal"
         android:layout_alignParentBottom="true"
-        android:padding="5dp"
-        android:layout_marginStart="5dp"
+        android:layout_marginBottom="5dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginBottom="5dp">
+        android:layout_marginStart="5dp"
+        android:orientation="horizontal"
+        android:padding="5dp">
 
         <EditText
             android:id="@+id/message_box"
@@ -29,16 +28,17 @@
             android:layout_height="40dp"
             android:layout_marginTop="5dp"
             android:layout_weight="1"
+            android:background="@drawable/edit_text"
             android:gravity="center_vertical"
             android:hint="Type a message"
             android:imeOptions="actionGo"
+            android:paddingBottom="4dp"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:paddingTop="6dp"
-            android:paddingBottom="4dp"
-            android:textSize="14sp"
-            android:background="@drawable/edit_text">
-            <requestFocus/>
+            android:textSize="14sp">
+
+            <requestFocus />
         </EditText>
 
         <ImageButton
@@ -46,55 +46,57 @@
             android:layout_width="47dp"
             android:layout_height="47dp"
             android:layout_gravity="center"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            android:paddingLeft="5dp"
-            android:paddingStart="5dp"
-            android:paddingRight="2dp"
-            android:paddingEnd="2dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
             android:layout_marginEnd="5dp"
+            android:layout_marginLeft="8dp"
             android:layout_marginRight="5dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/solid_circle_green"
+            android:paddingBottom="3dp"
+            android:paddingEnd="2dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="2dp"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
             android:src="@drawable/ic_send_black_48px"
-            android:visibility="gone"
-            android:background="@drawable/solid_circle_green"/>
+            android:visibility="gone" />
+
         <ImageButton
             android:id="@+id/button_send_camera_image"
             android:layout_width="47dp"
             android:layout_height="47dp"
             android:layout_gravity="center"
-            android:layout_marginTop="3dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            android:paddingLeft="5dp"
-            android:paddingStart="5dp"
-            android:paddingRight="2dp"
-            android:paddingEnd="2dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
             android:layout_marginEnd="5dp"
+            android:layout_marginLeft="8dp"
             android:layout_marginRight="5dp"
-            android:src="@drawable/ic_photo_camera_48px"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="3dp"
             android:background="@null"
-            android:visibility="visible"/>
+            android:paddingBottom="3dp"
+            android:paddingEnd="2dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="2dp"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:src="@drawable/ic_photo_camera_48px"
+            android:visibility="visible" />
+
         <ImageButton
             android:id="@+id/button_send_image"
             android:layout_width="47dp"
             android:layout_height="47dp"
             android:layout_gravity="center"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            android:paddingLeft="5dp"
-            android:paddingStart="5dp"
-            android:paddingRight="2dp"
-            android:paddingEnd="2dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
             android:layout_marginEnd="5dp"
+            android:layout_marginLeft="8dp"
             android:layout_marginRight="5dp"
-            android:src="@drawable/ic_photo_library_48px"
+            android:layout_marginStart="8dp"
             android:background="@null"
-            android:visibility="visible"/>
+            android:paddingBottom="3dp"
+            android:paddingEnd="2dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="2dp"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:src="@drawable/ic_photo_library_48px"
+            android:visibility="visible" />
     </LinearLayout>
 </RelativeLayout>

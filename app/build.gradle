@@ -22,8 +22,8 @@ android {
         applicationId "app.chat.letschat"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 5
-        versionName "1.2.3"
+        versionCode 6
+        versionName "1.2.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -45,7 +45,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.7'
 
     compile 'com.google.android.gms:play-services-analytics:11.0.2'
-    compile ('io.socket:socket.io-client:0.8.3') {
+    compile('io.socket:socket.io-client:0.8.3') {
         // excluding org.json which is provided by Android
         exclude group: 'org.json', module: 'json'
     }

@@ -28,10 +28,11 @@ public class SplashScreen extends AppCompatActivity {
             }
         }, getResources().getInteger(R.integer.SPLASH_SCREEN_TIMEOUT));
     }
-    private void proceedUsaully(){
+
+    private void proceedUsaully() {
 //        Intent intent = new Intent();
 //        startActivity(intent);
-        startActivity(new Intent(this,RegisterActivity.class));
+        startActivity(new Intent(this, RegisterActivity.class));
         finish();
     }
 }

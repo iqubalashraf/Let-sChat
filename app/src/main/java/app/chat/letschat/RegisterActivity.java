@@ -86,7 +86,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         } else if (Integer.parseInt(user_age.getText().toString()) < 14) {
             user_age.setError(Html.fromHtml("<font color='#ff9a00'>You must be 14 year old to use this app.</font>"));
             return false;
-        }else if(Integer.parseInt(user_age.getText().toString()) > 116){
+        } else if (Integer.parseInt(user_age.getText().toString()) > 116) {
             user_age.setError(Html.fromHtml("<font color='#ff9a00'>Invalid age.</font>"));
             return false;
         }

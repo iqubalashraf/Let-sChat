@@ -10,11 +10,12 @@ import android.util.Log;
  */
 
 public class AppStatus {
-    private static AppStatus instance = new AppStatus();
     static Context context;
+    private static AppStatus instance = new AppStatus();
     ConnectivityManager connectivityManager;
     //NetworkInfo wifiInfo, mobileInfo;
     boolean connected = false;
+
     public static AppStatus getInstance(Context ctx) {
         context = ctx.getApplicationContext();
         return instance;
@@ -30,8 +31,8 @@ public class AppStatus {
             return connected;
         } catch (Exception e) {
             // System.out.println("CheckConnectivity Exception: " + e.getMessage());
-            if(Constants.getBuildVersion())
-            Log.v("connectivity", e.toString());
+            if (Constants.getBuildVersion())
+                Log.v("connectivity", e.toString());
         }
         return connected;
     }
