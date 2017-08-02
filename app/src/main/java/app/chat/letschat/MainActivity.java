@@ -30,6 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -47,6 +48,8 @@ import java.util.List;
 import app.chat.letschat.adapters.AdapterMainActivity;
 import app.chat.letschat.dataModel.AppVersion;
 import app.chat.letschat.dataModel.Message;
+import hani.momanii.supernova_emoji_library.Actions.EmojIconActions;
+import hani.momanii.supernova_emoji_library.Helper.EmojiconEditText;
 import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -56,13 +59,14 @@ import io.socket.emitter.Emitter;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
     private static final String SERVER_IP_ADDRESS = "https://vast-dusk-15119.herokuapp.com/";
-//    private final String SERVER_IP_ADDRESS = "http://192.168.0.7:3000/";
+    //    private final String SERVER_IP_ADDRESS = "http://192.168.0.7:3000/";
     private static final String USER_NAME = "app.chat.letschat.USER_NAME";
     private static final String USER_GENDER = "app.chat.letschat.USER_GENDER";
     private static final int PICK_IMAGE_REQUEST = 121;
     private static final int CAMERA_REQUEST = 122;
     private static final int NOTIFICATION_ID = 786687;
     private static final int NOTIFICATION_UPDATE_ID = 78687;
+    private static final int NOTIFICATION_MESSAGE_ID = 7887;
     private static final int MALE = 0, FEMALE = 1;
     static Socket socket;
     static String mCurrentPhotoPath;
@@ -78,10 +82,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Context context;
     List<Message> messages = new ArrayList<>();
     ImageButton button_send, button_send_image, button_send_camera_image;
-    EditText message_box;
+    EmojiconEditText message_box;
     boolean isOpened = false;
     private AdapterMainActivity adapterMainActivity;
     private RecyclerView recycler_view;
+    ImageView emojicon_icon;
+    View rootView;
+    EmojIconActions emojIconActions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,15 +118,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onStop();
         mIsRunning = false;
     }
-
+    @Override
+    protected void onResume(){
+        super.onResume();
+    }
     private void initializeViews() {
         recycler_view = (RecyclerView) findViewById(R.id.recycler_view);
         recycler_view.setLayoutManager(new LinearLayoutManager(this));
         recycler_view.setHasFixedSize(true);
         button_send = (ImageButton) findViewById(R.id.button_send);
-        message_box = (EditText) findViewById(R.id.message_box);
         button_send_image = (ImageButton) findViewById(R.id.button_send_image);
         button_send_camera_image = (ImageButton) findViewById(R.id.button_send_camera_image);
+        message_box = (EmojiconEditText) findViewById(R.id.message_box);
+        emojicon_icon = (ImageView)findViewById(R.id.emojicon_icon);
+        rootView = findViewById(R.id.activity_main);
+        emojIconActions = new EmojIconActions(activity, rootView, message_box, emojicon_icon,
+                getResources().getString(R.string.string_emoji_icon_color), getResources().getString(R.string.string_emoji_tab_color),
+                getResources().getString(R.string.string_emoji_background_color));
+        emojIconActions.setIconsIds(R.drawable.ic_action_keyboard,R.drawable.smiley);
+        emojIconActions.ShowEmojIcon();
+
     }
 
     private void initializeAdapter() {
@@ -157,6 +175,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                 Message message = new Gson().fromJson(args[0].toString(), Message.class);
                                 updateAdapter(message);
+                                if(!mIsRunning)
+                                    sendNotification("New message", message.getText(), NOTIFICATION_MESSAGE_ID);
                                 if (Constants.getBuildVersion())
                                     Log.d("New Message", message.getText());
                             }
@@ -188,8 +208,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             public void call(Object... args) {
                                 Message message = new Gson().fromJson(args[0].toString(), Message.class);
                                 updateAdapter(message);
-                                if (Constants.getBuildVersion())
-                                    sendNotification("Connected", message.getText(), NOTIFICATION_ID);
+//                                if (Constants.getBuildVersion())
+                                sendNotification("Connected", message.getText(), NOTIFICATION_ID);
                                 isPartnerConnected = true;
                                 if (Constants.getBuildVersion())
                                     Log.d("New Message", message.getText());
@@ -278,6 +298,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         });
+        emojIconActions.setKeyboardListener(new EmojIconActions.KeyboardListener() {
+            @Override
+            public void onKeyboardOpen() {
+                scrollToBottom();
+            }
+
+            @Override
+            public void onKeyboardClose() {
+            }
+        });
     }
 
     private JSONObject getObject() {
@@ -286,10 +316,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             jsonObject.put("name", user_name);
             jsonObject.put("gender", gender);
             jsonObject.put("age", age);
-            jsonObject.put("unique_id",Constants.getDeviceUniqueId(context));
-            jsonObject.put("country",Constants.getCountryCode(context));
-            jsonObject.put("VERSION_NAME",BuildConfig.VERSION_NAME);
-            jsonObject.put("VERSION_CODE",BuildConfig.VERSION_CODE);
+            jsonObject.put("unique_id", Constants.getDeviceUniqueId(context));
+            jsonObject.put("country", Constants.getCountryCode(context));
+            jsonObject.put("VERSION_NAME", BuildConfig.VERSION_NAME);
+            jsonObject.put("VERSION_CODE", BuildConfig.VERSION_CODE);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -347,6 +377,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (id) {
             case R.id.action_reconnect:
+                messages.clear();
+                initializeAdapter();
+                emojIconActions.closeEmojIcon();
+                isPartnerConnected = false;
                 socket.emit("partnerLeft", getObject(), new Ack() {
                     @Override
                     public void call(Object... args) {
@@ -365,6 +399,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.action_exit:
                 finish();
+                break;
+            case R.id.action_rate_app:
+                rateUs(getResources().getString(R.string.app_direct_link));
+                break;
+            case R.id.action_share_app:
+                shareContent("Hey, I found this amazing app, \"Let's Chat\" for making new friends. Let's give a try. Download now from Play Store and enjoy.\n "
+                        + getResources().getString(R.string.app_bitly_link));
                 break;
         }
 
@@ -463,12 +504,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(context, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.message_box:
-                new Handler().postDelayed(new Runnable() {
+                emojIconActions.closeEmojIcon();
+                /*new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        scrollToBottom();
+
                     }
-                },600);
+                }, 300);*/
+
                 break;
             default:
                 break;
@@ -717,5 +760,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void scrollToBottom() {
         recycler_view.scrollToPosition(messages.size() - 1);
+    }
+
+    private void rateUs(String appLink) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(appLink));
+        startActivity(intent);
+    }
+
+    public void shareContent(String msg) {
+        Intent share_intent = new Intent();
+        share_intent.setAction(Intent.ACTION_SEND);
+        share_intent.putExtra(Intent.EXTRA_TEXT, msg);
+        share_intent.setType("text/plain");
+        share_intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(Intent.createChooser(share_intent,
+                "Share with"));
     }
 }

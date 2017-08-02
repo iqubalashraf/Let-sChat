@@ -7,6 +7,16 @@
     <string name="text_female">Female</string>
     <string name="action_reconnect">Re-connect</string>
     <string name="action_exit">Close chat</string>
+    <string name="action_share_app">Share app</string>
+    <string name="action_rate_app">Rate us</string>
     <string name="not_connected">Not connected</string>
+    <string name="app_bitly_link">http://bit.ly/2tIbLi7</string>
+    <string name="app_direct_link">https://play.google.com/store/apps/details?id=app.chat.letschat</string>
+    <string name="string_emoji_icon_color">#F44336</string>
+    <color name="emoji_icon_color">#F44336</color>
+    <string name="string_emoji_tab_color">#e8e8e8</string>
+    <color name="emoji_tab_color">#e8e8e8</color>
+    <string name="string_emoji_background_color">#f4f4f4</string>
+    <color name="emoji_background_color">#f4f4f4</color>
 
 </resources>

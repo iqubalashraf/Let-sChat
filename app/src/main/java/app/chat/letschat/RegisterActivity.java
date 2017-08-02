@@ -36,7 +36,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         context = getApplicationContext();
         setContentView(R.layout.activity_register);
-        if (!Constants.getBuildVersion())
+//        if (!Constants.getBuildVersion())
             if (GenralUtils.isRegistered(context)) {
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra(USER_NAME, GenralUtils.userName(context));
@@ -140,7 +140,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
                 whatsappIntent.setType("text/plain");
                 whatsappIntent.setPackage("com.whatsapp");
-                whatsappIntent.putExtra(Intent.EXTRA_TEXT, "Hey, I found this amazing app, *Let's Chat* for making new friends. Let's give a try. Download now from *Play Store* and enjoy.\n http://bit.ly/2tIbLi7");
+                whatsappIntent.putExtra(Intent.EXTRA_TEXT, "Hey, I found this amazing app, *Let's Chat* for making new friends. Let's give a try. Download now from *Play Store* and enjoy.\n "
+                        + getResources().getString(R.string.app_bitly_link));
                 try {
                     startActivity(whatsappIntent);
                 } catch (android.content.ActivityNotFoundException ex) {

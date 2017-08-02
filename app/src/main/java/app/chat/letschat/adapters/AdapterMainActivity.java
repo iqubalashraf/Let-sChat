@@ -19,6 +19,7 @@ import app.chat.letschat.GenralUtils;
 import app.chat.letschat.ImageClass;
 import app.chat.letschat.R;
 import app.chat.letschat.dataModel.Message;
+import hani.momanii.supernova_emoji_library.Helper.EmojiconTextView;
 
 /**
  * Created by ashrafiqubal on 14/07/17.
@@ -131,26 +132,28 @@ public class AdapterMainActivity extends RecyclerView.Adapter<RecyclerView.ViewH
     private class ViewHolderIncomingMessage extends RecyclerView.ViewHolder {
         View view;
         TextView time;
-        TextView message;
+        EmojiconTextView message;
 
         ViewHolderIncomingMessage(View view) {
             super(view);
             this.view = view;
             time = (TextView) view.findViewById(R.id.time);
-            message = (TextView) view.findViewById(R.id.message);
+            message = (EmojiconTextView) view.findViewById(R.id.message);
+            message.setEmojiconSize((int) GenralUtils.pxFromDp(context,28));
         }
 
     }
 
     private class ViewHolderOutgoingMessage extends RecyclerView.ViewHolder {
         View view;
-        TextView message;
+        EmojiconTextView message;
         TextView time;
 
         ViewHolderOutgoingMessage(View view) {
             super(view);
             this.view = view;
-            message = (TextView) view.findViewById(R.id.message);
+            message = (EmojiconTextView) view.findViewById(R.id.message);
+            message.setEmojiconSize((int) GenralUtils.pxFromDp(context,28));
             time = (TextView) view.findViewById(R.id.time);
         }
 
