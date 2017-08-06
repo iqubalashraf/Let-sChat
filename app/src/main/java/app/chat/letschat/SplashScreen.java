@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.view.WindowManager;
 
 /**
  * Created by ashrafiqubal on 12/07/17.
@@ -14,6 +15,7 @@ public class SplashScreen extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.spalsh_screen);
         new Handler().postDelayed(new Runnable() {
 
@@ -34,5 +36,10 @@ public class SplashScreen extends AppCompatActivity {
 //        startActivity(intent);
         startActivity(new Intent(this, RegisterActivity.class));
         finish();
+    }
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 }

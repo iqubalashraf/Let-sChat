@@ -28,11 +28,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -59,7 +61,7 @@ import io.socket.emitter.Emitter;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
     private static final String SERVER_IP_ADDRESS = "https://vast-dusk-15119.herokuapp.com/";
-    //    private final String SERVER_IP_ADDRESS = "http://192.168.0.7:3000/";
+//        private final String SERVER_IP_ADDRESS = "http://192.168.0.4:3000/";
     private static final String USER_NAME = "app.chat.letschat.USER_NAME";
     private static final String USER_GENDER = "app.chat.letschat.USER_GENDER";
     private static final int PICK_IMAGE_REQUEST = 121;
@@ -70,9 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int MALE = 0, FEMALE = 1;
     static Socket socket;
     static String mCurrentPhotoPath;
-    private static String user_name = "";
-    private static int gender = 2;
-    private static int age = 27;
+
     private static int k = 0;
     private static boolean isPartnerConnected = false;
     private static boolean mIsRunning = false;
@@ -90,6 +90,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     View rootView;
     EmojIconActions emojIconActions;
 
+    private AdView mAdView;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,14 +100,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.chat_background_2));
         activity = this;
         context = getApplicationContext();
-        Intent intent = getIntent();
-        user_name = intent.getStringExtra(USER_NAME);
-        gender = intent.getIntExtra(USER_GENDER, 2);
-        age = intent.getIntExtra(USER_AGE, 27);
+        Constants.getDeviceUniqueId(context);
         initializeViews();
         initializeSocket();
         initializeAdapter();
         initializeOnClickListner();
+        initializeAd();
     }
 
     @Override
@@ -118,10 +119,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onStop();
         mIsRunning = false;
     }
+
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
     }
+
     private void initializeViews() {
         recycler_view = (RecyclerView) findViewById(R.id.recycler_view);
         recycler_view.setLayoutManager(new LinearLayoutManager(this));
@@ -130,12 +133,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         button_send_image = (ImageButton) findViewById(R.id.button_send_image);
         button_send_camera_image = (ImageButton) findViewById(R.id.button_send_camera_image);
         message_box = (EmojiconEditText) findViewById(R.id.message_box);
-        emojicon_icon = (ImageView)findViewById(R.id.emojicon_icon);
+        emojicon_icon = (ImageView) findViewById(R.id.emojicon_icon);
         rootView = findViewById(R.id.activity_main);
         emojIconActions = new EmojIconActions(activity, rootView, message_box, emojicon_icon,
-                getResources().getString(R.string.string_emoji_icon_color), getResources().getString(R.string.string_emoji_tab_color),
+                getResources().getString(R.string.brand_color), getResources().getString(R.string.string_emoji_tab_color),
                 getResources().getString(R.string.string_emoji_background_color));
-        emojIconActions.setIconsIds(R.drawable.ic_action_keyboard,R.drawable.smiley);
+        emojIconActions.setIconsIds(R.drawable.ic_keyboard_36px, R.drawable.ic_smiley);
         emojIconActions.ShowEmojIcon();
 
     }
@@ -175,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                 Message message = new Gson().fromJson(args[0].toString(), Message.class);
                                 updateAdapter(message);
-                                if(!mIsRunning)
+                                if (!mIsRunning)
                                     sendNotification("New message", message.getText(), NOTIFICATION_MESSAGE_ID);
                                 if (Constants.getBuildVersion())
                                     Log.d("New Message", message.getText());
@@ -188,6 +191,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                 Message message = new Gson().fromJson(args[0].toString(), Message.class);
                                 updateAdapter(message);
+                                if (!mIsRunning)
+                                    sendNotification("New message", "Image received", NOTIFICATION_MESSAGE_ID);
                                 if (Constants.getBuildVersion())
                                     Log.d("New Image Message", message.getText());
                             }
@@ -313,9 +318,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private JSONObject getObject() {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("name", user_name);
-            jsonObject.put("gender", gender);
-            jsonObject.put("age", age);
+            jsonObject.put("name", GenralUtils.userName(context));
+            jsonObject.put("gender", GenralUtils.userGender(context));
+            jsonObject.put("age", GenralUtils.userAge(context));
             jsonObject.put("unique_id", Constants.getDeviceUniqueId(context));
             jsonObject.put("country", Constants.getCountryCode(context));
             jsonObject.put("VERSION_NAME", BuildConfig.VERSION_NAME);
@@ -329,7 +334,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private JSONObject getMessageObject() {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("name", user_name);
+            jsonObject.put("name", GenralUtils.userName(context));
             jsonObject.put("text", message_box.getText().toString().trim());
         } catch (JSONException e) {
             e.printStackTrace();
@@ -340,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private JSONObject getImageObject(String image) {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("name", user_name);
+            jsonObject.put("name", GenralUtils.userName(context));
             jsonObject.put("text", image);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -657,7 +662,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private int getNotificationIcon() {
         boolean useWhiteIcon = (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP);
-        return useWhiteIcon ? R.drawable.ic_forum_white_48px : R.drawable.ic_forum_brand_color_48px;
+        return useWhiteIcon ? R.drawable.ic_chat_copy : R.mipmap.ic_launcher;
     }
 
     public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
@@ -776,5 +781,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         share_intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(Intent.createChooser(share_intent,
                 "Share with"));
+    }
+
+    private void initializeAd() {
+        mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest;
+        if (Constants.getBuildVersion())
+            adRequest = new AdRequest.Builder()
+                    .addTestDevice(getResources().getString(R.string.lenovo_test_ad_id))
+                    .build();
+        else
+            adRequest = new AdRequest.Builder().build();
+
+        if(adRequest.isTestDevice(context))
+            Log.d(TAG, "Added as test device");
+        mAdView.loadAd(adRequest);
+        mAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+                Log.i("Ads", "onAdLoaded");
+                mAdView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                // Code to be executed when an ad request fails.
+                Log.i("Ads", "onAdFailedToLoad");
+            }
+
+            @Override
+            public void onAdOpened() {
+                // Code to be executed when an ad opens an overlay that
+                // covers the screen.
+                Log.i("Ads", "onAdOpened");
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+                Log.i("Ads", "onAdLeftApplication");
+            }
+
+            @Override
+            public void onAdClosed() {
+                // Code to be executed when when the user is about to return
+                // to the app after tapping on an ad.
+                Log.i("Ads", "onAdClosed");
+            }
+        });
     }
 }

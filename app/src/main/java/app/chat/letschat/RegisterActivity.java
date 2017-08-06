@@ -39,9 +39,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 //        if (!Constants.getBuildVersion())
             if (GenralUtils.isRegistered(context)) {
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra(USER_NAME, GenralUtils.userName(context));
-                intent.putExtra(USER_GENDER, GenralUtils.userGender(context));
-                intent.putExtra(USER_AGE, GenralUtils.userAge(context));
                 startActivity(intent);
                 finish();
             }
@@ -108,9 +105,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                         GenralUtils.userGender(context, gender);
                         GenralUtils.isRegistered(context, true);
                         Intent intent = new Intent(this, MainActivity.class);
-                        intent.putExtra(USER_NAME, user_name.getText().toString());
-                        intent.putExtra(USER_GENDER, gender);
-                        intent.putExtra(USER_AGE, Integer.parseInt(user_age.getText().toString()));
                         startActivity(intent);
                         finish();
                     }
@@ -131,7 +125,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private void displayShareDialog() {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("Message");
-        dialog.setIcon(android.R.drawable.ic_dialog_alert);
+        dialog.setIcon(R.drawable.ic_warning);
+        dialog.setCancelable(false);
         dialog.setMessage("You're first time user, you need to share app with 5 whats app contacts to continue.");
         dialog.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override

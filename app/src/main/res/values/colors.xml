@@ -3,9 +3,10 @@
     <color name="colorPrimary">#0e04f4</color>
     <color name="colorPrimaryDark">#A90e04f4</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="brand_color">#0e04f4</color>
+    <color name="brand_color">#D74A49</color>
     <color name="incoming_chat_bubble_background">#f0f8ff</color>
     <color name="outgoing_chat_bubble">#f5f5dc</color>
     <color name="other_message_background">#ffebcd</color>
-    <color name="edittext_box">#8b8878</color>
+    <color name="edittext_box">#000000</color>
+    <color name="background_register_activity">#D74A49</color>
 </resources>

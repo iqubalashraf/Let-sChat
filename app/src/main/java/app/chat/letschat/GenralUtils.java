@@ -101,6 +101,30 @@ public class GenralUtils {
         editor.putInt("userAge", age);
         editor.apply();
     }
+
+    public static String userDeviceId(Context context) {
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        return prefs.getString("userDeviceId", "");
+    }
+
+    public static void userDeviceId(Context context, String userDeviceId) {
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("userDeviceId", userDeviceId);
+        editor.apply();
+    }
+    public static String userCountryCode(Context context) {
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        return prefs.getString("userCountryCode", "");
+    }
+
+    public static void userCountryCode(Context context, String userCountryCode) {
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("userCountryCode", userCountryCode);
+        editor.apply();
+    }
+
     public static float dpFromPx(final Context context, final float px) {
         return px / context.getResources().getDisplayMetrics().density;
     }

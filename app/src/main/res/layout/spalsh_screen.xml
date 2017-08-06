@@ -6,10 +6,29 @@
     android:background="@color/brand_color"
     tools:context="app.chat.letschat.SplashScreen">
 
-    <ImageView
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_centerInParent="true"
-        android:src="@drawable/ic_forum_white_48px" />
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+        <TextView
+            android:id="@+id/app_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Let's Chat"
+            android:textColor="@android:color/white"
+            android:textSize="48dp"
+            android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/app_name_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_below="@id/app_name"
+            android:text="Best Random Stranger Chat App"
+            android:textColor="@android:color/white"
+            android:textStyle="italic"
+            android:textSize="17sp"/>
+    </RelativeLayout>
 
 </RelativeLayout>

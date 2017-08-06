@@ -3,12 +3,14 @@ package app.chat.letschat;
 import android.content.Context;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 /**
  * Created by ashrafiqubal on 12/07/17.
  */
 
 public class Constants {
+    final static String TAG = "Constants";
     public static final int VIEW_TYPE_FRIEND_MESSAGE = 2;
     public static final int VIEW_TYPE_MY_MESSAGE = 1;
     public static final int VIEW_TYPE_OTHER_MESSAGE = 3;
@@ -31,8 +33,14 @@ public class Constants {
         return false;
     }
     public static String getDeviceUniqueId(Context context) {
-        return Settings.Secure.getString(context.getContentResolver(),
-                Settings.Secure.ANDROID_ID);
+        try{
+            return Settings.Secure.getString(context.getContentResolver(),
+                    Settings.Secure.ANDROID_ID);
+        }catch (Exception e){
+            e.printStackTrace();
+            return "NA";
+        }
+
     }
     public static String getCountryCode(Context context){
         TelephonyManager tm = (TelephonyManager)context.getSystemService(context.TELEPHONY_SERVICE);

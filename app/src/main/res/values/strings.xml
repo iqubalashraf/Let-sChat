@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Let\'s Chat</string>
-    <string name="brand_color">#0e04f4</string>
+    <string name="brand_color">#D74A49</string>
     <string name="text_enter_display_name">Enter name</string>
     <string name="text_enter_age">Enter age</string>
     <string name="text_male">Male</string>
@@ -18,5 +18,7 @@
     <color name="emoji_tab_color">#e8e8e8</color>
     <string name="string_emoji_background_color">#f4f4f4</string>
     <color name="emoji_background_color">#f4f4f4</color>
+    <string name="lenovo_test_ad_id">46DCD9708258F5B656BEC902773F0CE8</string>
+    <string name="huwai_test_ad_id">5075EC74A845B4C8A8EDA1076DACBFFD</string>
 
 </resources>
