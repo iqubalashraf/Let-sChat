@@ -32,9 +32,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -60,7 +57,7 @@ import io.socket.emitter.Emitter;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
-    private static final String SERVER_IP_ADDRESS = "https://vast-dusk-15119.herokuapp.com/";
+    private static final String SERVER_IP_ADDRESS = "http://13.232.122.198:2000/";
 //        private final String SERVER_IP_ADDRESS = "http://192.168.0.4:3000/";
     private static final String USER_NAME = "app.chat.letschat.USER_NAME";
     private static final String USER_GENDER = "app.chat.letschat.USER_GENDER";
@@ -90,7 +87,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     View rootView;
     EmojIconActions emojIconActions;
 
-    private AdView mAdView;
 
 
     @Override
@@ -105,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initializeSocket();
         initializeAdapter();
         initializeOnClickListner();
-        initializeAd();
     }
 
     @Override
@@ -781,54 +776,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         share_intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(Intent.createChooser(share_intent,
                 "Share with"));
-    }
-
-    private void initializeAd() {
-        mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest;
-        if (Constants.getBuildVersion())
-            adRequest = new AdRequest.Builder()
-                    .addTestDevice(getResources().getString(R.string.lenovo_test_ad_id))
-                    .build();
-        else
-            adRequest = new AdRequest.Builder().build();
-
-        if(adRequest.isTestDevice(context))
-            Log.d(TAG, "Added as test device");
-        mAdView.loadAd(adRequest);
-        mAdView.setAdListener(new AdListener() {
-            @Override
-            public void onAdLoaded() {
-                // Code to be executed when an ad finishes loading.
-                Log.i("Ads", "onAdLoaded");
-                mAdView.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onAdFailedToLoad(int errorCode) {
-                // Code to be executed when an ad request fails.
-                Log.i("Ads", "onAdFailedToLoad");
-            }
-
-            @Override
-            public void onAdOpened() {
-                // Code to be executed when an ad opens an overlay that
-                // covers the screen.
-                Log.i("Ads", "onAdOpened");
-            }
-
-            @Override
-            public void onAdLeftApplication() {
-                // Code to be executed when the user has left the app.
-                Log.i("Ads", "onAdLeftApplication");
-            }
-
-            @Override
-            public void onAdClosed() {
-                // Code to be executed when when the user is about to return
-                // to the app after tapping on an ad.
-                Log.i("Ads", "onAdClosed");
-            }
-        });
     }
 }

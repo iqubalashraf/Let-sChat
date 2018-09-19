@@ -6,22 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="app.chat.letschat.MainActivity">
-    <com.google.android.gms.ads.AdView
-        xmlns:ads="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/adView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"
-        ads:adSize="SMART_BANNER"
-        ads:adUnitId="ca-app-pub-7581284917215545/7125307402">
-    </com.google.android.gms.ads.AdView>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/footer"
-        android:layout_below="@id/adView"/>
+        android:layout_above="@+id/footer"/>
 
     <LinearLayout
         android:id="@+id/footer"
